@@ -1,8 +1,13 @@
 package ru.netology.model;
 
+
+import jdk.jfr.BooleanFlag;
+
 public class Post {
     private long id;
     private String content;
+
+    private transient boolean removed;
 
     public Post() {
     }
@@ -26,5 +31,14 @@ public class Post {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    @BooleanFlag
+    public boolean isRemoved() {
+        return removed;
+    }
+
+    public void setRemoved(boolean removed) {
+        this.removed = removed;
     }
 }

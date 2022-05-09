@@ -7,6 +7,7 @@ import ru.netology.model.Post;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 @Repository
 public class PostRepositoryImpl implements PostRepository {
@@ -20,11 +21,18 @@ public class PostRepositoryImpl implements PostRepository {
     }
 
     public List<Post> all() {
-        return new ArrayList<>(repository.values());
+        return repository.values().stream()
+                .filter(value -> !value.isRemoved())
+                .collect(Collectors.toList());
     }
 
     public Optional<Post> getById(long id) {
-        return Optional.ofNullable(repository.get(id));
+        var post = repository.get(id);
+        if (post != null && !post.isRemoved()) {
+            return Optional.of(post);
+        } else {
+            return Optional.empty();
+        }
     }
 
     public Post save(Post post) {
@@ -34,17 +42,19 @@ public class PostRepositoryImpl implements PostRepository {
             repository.put(post.getId(), post);
             return post;
         }
-        if (repository.containsKey(postId)) {
+        if (repository.containsKey(postId) && !repository.get(postId).isRemoved()) {
             repository.put(postId, post);
             return post;
-        } else {
-            throw new NotFoundException();
         }
+        throw new NotFoundException();
     }
 
     public void removeById(long id) {
-        if (repository.remove(id) == null) {
+        var post = repository.get(id);
+        if (post == null) {
             throw new NotFoundException();
+        } else {
+            post.setRemoved(true);
         }
     }
 }
